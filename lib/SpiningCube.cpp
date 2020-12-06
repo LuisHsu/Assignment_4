@@ -6,7 +6,17 @@
 
 #include <SpiningCube.hpp>
 
-int main(int argc, char const *argv[]){
-    SpiningCube app;
-    return app.exec();
+#include <iostream>
+
+SpiningCube::SpiningCube(){
+
+}
+
+SpiningCube::~SpiningCube(){
+
+}
+
+int SpiningCube::exec(){
+
+    return 0;
 }
