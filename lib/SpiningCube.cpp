@@ -16,7 +16,6 @@ SpiningCube::~SpiningCube(){
 
 }
 
-int SpiningCube::exec(){
+void SpiningCube::exec(){
 
-    return 0;
 }
