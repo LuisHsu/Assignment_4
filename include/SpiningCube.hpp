@@ -2,6 +2,7 @@
 #define SPINING_CUBE_DEF
 
 #include <Window.hpp>
+#include <Input.hpp>
 
 class SpiningCube{
 public:
@@ -10,6 +11,7 @@ public:
     void exec();
 private:
     Window window;
+    Input input;
 };
 
 #endif

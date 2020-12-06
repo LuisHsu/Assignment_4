@@ -6,8 +6,6 @@
 
 #include <SpiningCube.hpp>
 
-#include <iostream>
-
 SpiningCube::SpiningCube(){
 
 }

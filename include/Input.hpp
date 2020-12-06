@@ -7,10 +7,13 @@ class Input{
 public:
     Input();
     ~Input();
-    void dispatch();
+
+    bool isAvailable;
+
 private:
     struct libinput_interface interface;
     struct libinput* input;
+    struct udev* udevCtx;
 };
 
 #endif
