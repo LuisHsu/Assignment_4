@@ -15,3 +15,7 @@
 * Wayland
 
 * libinput
+
+* libudev
+
+* libsystemd
