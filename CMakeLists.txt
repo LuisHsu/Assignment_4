@@ -24,6 +24,7 @@ add_executable(spining_cube
     src/SpiningCube.cpp
     src/Window.cpp
     src/Input.cpp
+    src/EventHandler.cpp
 )
 target_link_libraries(spining_cube
     ${Vulkan_LIBRARIES}
