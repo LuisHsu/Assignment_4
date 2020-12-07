@@ -3,6 +3,7 @@
 
 #include <Window.hpp>
 #include <Input.hpp>
+#include <EventHandler.hpp>
 
 class SpiningCube{
 public:
@@ -12,6 +13,7 @@ public:
 private:
     Window window;
     Input input;
+    EventHandler eventHandler;
 };
 
 #endif

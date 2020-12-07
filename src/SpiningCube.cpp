@@ -6,7 +6,9 @@
 
 #include <SpiningCube.hpp>
 
-SpiningCube::SpiningCube(){
+SpiningCube::SpiningCube():
+    eventHandler(1)
+{
 
 }
 
@@ -15,5 +17,5 @@ SpiningCube::~SpiningCube(){
 }
 
 void SpiningCube::exec(){
-
+    eventHandler.run();
 }

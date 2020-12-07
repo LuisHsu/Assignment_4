@@ -8,6 +8,7 @@ Window::Window():
     if(!display){
         throw std::runtime_error("Cannot connect wayland display");
     }
+    // TODO:
 }
 
 Window::~Window(){

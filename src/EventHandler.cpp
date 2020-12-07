@@ -21,9 +21,10 @@ EventHandler::~EventHandler(){
     close(epollFd);
 }
 
-void EventHandler::setEvent(int fd, uint32_t flags, std::function<void()> callback){
+void EventHandler::setEvent(int fd, uint32_t flags, callback_t callback){
     struct epoll_event event;
     event.events = flags;
+    event.data.fd = fd;
     if(epoll_ctl(epollFd, callbackTable.contains(fd) ? EPOLL_CTL_MOD : EPOLL_CTL_ADD, fd, &event)){
         throw std::runtime_error("Unable to set event");
     }
@@ -33,7 +34,9 @@ void EventHandler::setEvent(int fd, uint32_t flags, std::function<void()> callba
 void EventHandler::run(){
     isRunning = true;
     for(int count; isRunning && ((count = epoll_wait(epollFd, events.data(), events.size(), -1)) >= 0) ;){
-        // TODO:
+        for(size_t eventIndex = 0; eventIndex < count; ++eventIndex){
+            callbackTable[events[eventIndex].data.fd](events[eventIndex].events);
+        }
     }
 }
 

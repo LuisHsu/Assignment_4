@@ -34,13 +34,13 @@ Input::Input():
     // Find seat
     char** seats;
     if(sd_get_seats(&seats) == 0){
-        std::cerr << "[WARNING]: Cannot find systemd seats, input will be unavailabled" << std::endl;
+        std::cerr << "[WARNING]: Cannot find systemd seats, input will be unavailable" << std::endl;
         return;
     }
     // Create context & assign seat
     input = libinput_udev_create_context(&interface, nullptr, udevCtx);
     if(libinput_udev_assign_seat(input, seats[0])){
-        std::cerr << "[WARNING]: Cannot seat to libinput, input will be unavailabled" << std::endl;
+        std::cerr << "[WARNING]: Cannot assign seat to libinput, input will be unavailable" << std::endl;
         libinput_unref(input);
         udev_unref(udevCtx);
         return;

@@ -8,17 +8,18 @@
 #include <unordered_map>
 
 class EventHandler{
+    using callback_t = std::function<void(uint32_t)>;
 public:
     EventHandler(int size);
     ~EventHandler();
     void run();
     void stop();
-    void setEvent(int fd, uint32_t flags, std::function<void()> callback);
+    void setEvent(int fd, uint32_t flags, callback_t callback);
 private:
     int epollFd;
     bool isRunning;
     std::vector<struct epoll_event> events;
-    std::unordered_map<int, std::function<void()>> callbackTable;
+    std::unordered_map<int, callback_t> callbackTable;
 };
 
 #endif
