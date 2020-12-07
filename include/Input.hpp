@@ -7,8 +7,10 @@ class Input{
 public:
     Input();
     ~Input();
-    bool isAvailable;
+    int getFd();
 
+    bool isAvailable;
+    
 private:
     struct libinput_interface interface;
     struct libinput* input;

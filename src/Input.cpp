@@ -55,3 +55,7 @@ Input::~Input(){
         udev_unref(udevCtx);
     }
 }
+
+int Input::getFd(){
+    return libinput_get_fd(input);
+}

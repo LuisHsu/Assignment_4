@@ -9,7 +9,6 @@
 SpiningCube::SpiningCube():
     eventHandler(1)
 {
-
 }
 
 SpiningCube::~SpiningCube(){
