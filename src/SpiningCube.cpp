@@ -6,9 +6,15 @@
 
 #include <SpiningCube.hpp>
 
+#include <iostream>
+
 SpiningCube::SpiningCube():
     eventHandler(1)
 {
+    eventHandler.setEvent(timer.fd, EPOLLIN, [](uint32_t){
+        // TODO:
+        std::cout << "tick" << std::endl; // FIXME:
+    });
 }
 
 SpiningCube::~SpiningCube(){
@@ -16,5 +22,6 @@ SpiningCube::~SpiningCube(){
 }
 
 void SpiningCube::exec(){
+    timer.start(1000000L);
     eventHandler.run();
 }

@@ -25,7 +25,7 @@ void EventHandler::setEvent(int fd, uint32_t flags, callback_t callback){
     struct epoll_event event;
     event.events = flags;
     event.data.fd = fd;
-    if(epoll_ctl(epollFd, callbackTable.contains(fd) ? EPOLL_CTL_MOD : EPOLL_CTL_ADD, fd, &event)){
+    if(epoll_ctl(epollFd, (callbackTable.contains(fd) ? EPOLL_CTL_MOD : EPOLL_CTL_ADD), fd, &event)){
         throw std::runtime_error("Unable to set event");
     }
     callbackTable[fd] = callback;
