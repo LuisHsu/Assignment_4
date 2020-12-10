@@ -12,7 +12,7 @@ public:
     ~SpiningCube();
     void exec();
 private:
-    //Window window;
+    Window window;
     Timer timer;
     EventHandler eventHandler;
     Input input;
