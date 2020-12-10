@@ -46,6 +46,9 @@ void SpiningCube::onInput(uint32_t){
                 case KEY_G:
                     std::cout << "Key G" << std::endl; // TODO:
                 break;
+                case KEY_ESC:
+                    eventHandler.stop();
+                break;
             }
         }
     }
