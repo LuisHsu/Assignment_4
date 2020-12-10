@@ -32,6 +32,13 @@ void Timer::start(long nsec){
     }
 }
 
+void Timer::dispatch(){
+    struct itimerspec spec;
+    if(timerfd_gettime(fd, &spec)){
+        throw std::runtime_error("Cannot get timer");
+    }
+}
+
 void Timer::stop(){
     struct itimerspec newspec;
     newspec.it_interval.tv_sec = 0;

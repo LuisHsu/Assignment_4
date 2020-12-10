@@ -18,7 +18,7 @@
 
 static int open_restricted(const char *path, int flags, void *){
     int fd = open(path, flags);
-    return fd < 0 ? -errno : fd;
+    return (fd < 0) ? -errno : fd;
 }
  
 static void close_restricted(int fd, void *){
@@ -45,6 +45,8 @@ Input::Input():
         udev_unref(udevCtx);
         return;
     }
+    // Expose fd
+    fd = libinput_get_fd(input);
     // Initialized
     isAvailable = true;
 }
@@ -56,6 +58,9 @@ Input::~Input(){
     }
 }
 
-int Input::getFd(){
-    return libinput_get_fd(input);
+std::pair<libinput_event_type, struct libinput_event*> Input::getEvent(){
+    if(libinput_dispatch(input)){
+        throw std::runtime_error("Cannot dispatch input");
+    }
+    return std::pair<libinput_event_type, struct libinput_event*>(libinput_next_event_type(input), libinput_get_event(input));
 }

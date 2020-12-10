@@ -12,10 +12,13 @@ public:
     ~SpiningCube();
     void exec();
 private:
-    Window window;
-    Input input;
+    //Window window;
     Timer timer;
     EventHandler eventHandler;
+    Input input;
+    void onTimerTick(uint32_t);
+    void onInput(uint32_t);
+    const long interval = 500000000L;
 };
 
 #endif

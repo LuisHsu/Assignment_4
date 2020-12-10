@@ -6,6 +6,7 @@ public:
     Timer();
     ~Timer();
     void start(long nsec);
+    void dispatch();
     void stop();
     int fd;
 };
