@@ -5,6 +5,7 @@
 #include <Input.hpp>
 #include <EventHandler.hpp>
 #include <Timer.hpp>
+#include <GraphicsDevice.hpp>
 
 class SpiningCube{
 public:
@@ -13,6 +14,7 @@ public:
     void exec();
 private:
     Window window;
+    GraphicsDevice graphics;
     Timer timer;
     EventHandler eventHandler;
     Input input;
