@@ -6,10 +6,14 @@
 
 class GraphicsDevice{
 public:
-    GraphicsDevice(struct wl_surface* surface);
+    GraphicsDevice();
     ~GraphicsDevice();
+
 private:
+    VkQueue graphicsQueue;
     VkInstance instance;
+    VkPhysicalDevice physicalDevice;
+    VkDevice device;
 };
 
 
