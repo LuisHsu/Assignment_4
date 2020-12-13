@@ -10,7 +10,11 @@
 #include <linux/input-event-codes.h>
 
 SpiningCube::SpiningCube():
-    window(), graphics(), eventHandler(2)
+    instance(),
+    window(instance.instance),
+    graphics(instance.instance, window.surface),
+    pipeline(),
+    eventHandler(2)
 {
     eventHandler.setEvent(timer.fd, EPOLLIN | EPOLLET, std::bind(&SpiningCube::onTimerTick, this, std::placeholders::_1));
     eventHandler.setEvent(input.fd, EPOLLIN | EPOLLET, std::bind(&SpiningCube::onInput, this, std::placeholders::_1));

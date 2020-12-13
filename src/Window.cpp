@@ -10,6 +10,10 @@
 #include <iostream>
 #include <string>
 
+extern "C"{
+#include <vulkan/vulkan_wayland.h>
+}
+
 struct wl_compositor* Window::compositor = nullptr;
 struct wl_shell* Window::shell = nullptr;
 
@@ -25,8 +29,8 @@ struct wl_registry_listener Window::registryListener = {
     }
 };
 
-Window::Window():
-    display(wl_display_connect(nullptr))
+Window::Window(VkInstance& instance):
+    instance(instance), display(wl_display_connect(nullptr))
 {
     if(!display){
         throw std::runtime_error("Cannot connect wayland display");
@@ -43,15 +47,25 @@ Window::Window():
     if(wl_display_roundtrip(display) == -1){
         throw std::runtime_error("Cannot roundtrip wayland display");
     }
-    if((surface = wl_compositor_create_surface(compositor)) == nullptr){
+    if((wlSurface = wl_compositor_create_surface(compositor)) == nullptr){
         throw std::runtime_error("Cannot create wayland surface");
     }
-    if((shellSurface = wl_shell_get_shell_surface(shell, surface)) == nullptr){
+    if((shellSurface = wl_shell_get_shell_surface(shell, wlSurface)) == nullptr){
         throw std::runtime_error("Cannot get wayland shell surface");
     }
     wl_shell_surface_set_toplevel(shellSurface);
+    // Create Vulkan surface
+    VkWaylandSurfaceCreateInfoKHR surfaceInfo = {
+        .sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR,
+        .display = display,
+        .surface = wlSurface,
+    };
+    if(vkCreateWaylandSurfaceKHR(instance, &surfaceInfo, nullptr, &surface) != VK_SUCCESS){
+        throw std::runtime_error("Cannot create Vulkan surface");
+    }
 }
 
 Window::~Window(){
     wl_display_disconnect(display);
+    vkDestroySurfaceKHR(instance, surface, nullptr);
 }

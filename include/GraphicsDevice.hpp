@@ -2,16 +2,13 @@
 #define GRAPHICSDEVICE_DEF
 
 #include <vulkan/vulkan.hpp>
-#include <wayland-client.h>
 
 class GraphicsDevice{
 public:
-    GraphicsDevice();
+    GraphicsDevice(VkInstance& instance, VkSurfaceKHR& surface);
     ~GraphicsDevice();
-
 private:
-    VkQueue graphicsQueue;
-    VkInstance instance;
+    VkQueue graphicQueue, presentQueue;
     VkPhysicalDevice physicalDevice;
     VkDevice device;
 };

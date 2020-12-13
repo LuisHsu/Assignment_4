@@ -1,15 +1,19 @@
 #ifndef WINDOW_DEF
 #define WINDOW_DEF
 
+#include <vulkan/vulkan.hpp>
 #include <wayland-client.h>
 
 class Window{
 public:
-    Window();
+    Window(VkInstance& instance);
     ~Window();
-    struct wl_surface* surface;
-
+    
+    VkSurfaceKHR surface;
+    
 private:
+    VkInstance& instance;
+    struct wl_surface* wlSurface;
     struct wl_display* display;
     struct wl_registry* registry;
     struct wl_shell_surface* shellSurface;

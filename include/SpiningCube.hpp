@@ -6,15 +6,20 @@
 #include <EventHandler.hpp>
 #include <Timer.hpp>
 #include <GraphicsDevice.hpp>
+#include <GraphicsInstance.hpp>
+#include <Pipeline.hpp>
 
 class SpiningCube{
 public:
     SpiningCube();
     ~SpiningCube();
     void exec();
+    
 private:
+    GraphicsInstance instance;
     Window window;
     GraphicsDevice graphics;
+    Pipeline pipeline;
     Timer timer;
     EventHandler eventHandler;
     Input input;
