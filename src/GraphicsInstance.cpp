@@ -22,7 +22,6 @@ GraphicsInstance::GraphicsInstance(){
     };
     std::vector<const char*> extensionNames({
         "VK_KHR_wayland_surface"
-        "VK_KHR_xcb_surface"
     });
     VkInstanceCreateInfo instanceCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,

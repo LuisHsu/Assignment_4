@@ -17,9 +17,9 @@ public:
     
 private:
     GraphicsInstance instance;
-    Window window;
-    GraphicsDevice graphics;
-    Pipeline pipeline;
+    //Window window;
+    //GraphicsDevice graphics;
+    //Pipeline pipeline;
     Timer timer;
     EventHandler eventHandler;
     Input input;
