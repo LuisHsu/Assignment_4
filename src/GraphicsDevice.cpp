@@ -9,8 +9,11 @@
 #include <iostream>
 #include <stdexcept>
 #include <vector>
+#include <cstring>
+#include <optional>
+#include <algorithm>
 
-GraphicsDevice::GraphicsDevice(VkInstance& instance, VkSurfaceKHR& surface):
+GraphicsDevice::GraphicsDevice(VkInstance instance, Window& window):
     physicalDevice(VK_NULL_HANDLE)
 {
     // Get physical device
@@ -24,33 +27,53 @@ GraphicsDevice::GraphicsDevice(VkInstance& instance, VkSurfaceKHR& surface):
     if(vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, physicalDevices.data()) != VK_SUCCESS){
         throw std::runtime_error("Cannot get Vulkan physical devices");
     }
-    uint32_t graphicFamily, presentFamily;
-    for(VkPhysicalDevice& device : physicalDevices){
+    std::optional<uint32_t> graphicFamily, presentFamily;
+    for(VkPhysicalDevice& candidateDevice : physicalDevices){
         VkPhysicalDeviceProperties deviceProperties;
         VkPhysicalDeviceFeatures deviceFeatures;
-        vkGetPhysicalDeviceProperties(device, &deviceProperties);
-        vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-        if(deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && deviceFeatures.geometryShader){
-            physicalDevice = device;
-            uint32_t queueFamilyCount = 0;
-            vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-            std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyCount);
-            vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilyProperties.data());
-            for(uint32_t index = 0; index < queueFamilyCount; ++index){
-                if(queueFamilyProperties[index].queueFlags & VK_QUEUE_GRAPHICS_BIT){
-                    graphicFamily = index;
+        vkGetPhysicalDeviceProperties(candidateDevice, &deviceProperties);
+        vkGetPhysicalDeviceFeatures(candidateDevice, &deviceFeatures);
+        if(deviceFeatures.geometryShader){
+            // Check device extentions
+            const std::vector<const char*> requiredExtensions = {
+                VK_KHR_SWAPCHAIN_EXTENSION_NAME
+            };
+            uint32_t extensionCount;
+            vkEnumerateDeviceExtensionProperties(candidateDevice, nullptr, &extensionCount, nullptr);
+            std::vector<VkExtensionProperties> availableExtensionsProp(extensionCount);
+            vkEnumerateDeviceExtensionProperties(candidateDevice, nullptr, &extensionCount, availableExtensionsProp.data());
+            bool isSuitable = true;
+            for(const char* extension : requiredExtensions){
+                if(std::find_if(availableExtensionsProp.begin(), availableExtensionsProp.end(), [extension](VkExtensionProperties& prop){
+                    return strcmp(prop.extensionName, extension) == 0;
+                }) == availableExtensionsProp.end()){
+                    isSuitable = false;
                 }
-                VkBool32 presentSupport = false;
-                if(vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, index, surface, &presentSupport) != VK_SUCCESS){
-                    throw std::runtime_error("Cannot check surface support");
-                }else if(presentSupport){
-                    presentFamily = index;
+            }
+            if(isSuitable){
+                physicalDevice = candidateDevice;
+                // Check device queue family support
+                uint32_t queueFamilyCount = 0;
+                vkGetPhysicalDeviceQueueFamilyProperties(candidateDevice, &queueFamilyCount, nullptr);
+                std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyCount);
+                vkGetPhysicalDeviceQueueFamilyProperties(candidateDevice, &queueFamilyCount, queueFamilyProperties.data());
+                graphicFamily.reset();
+                presentFamily.reset();
+                for(uint32_t index = 0; index < queueFamilyCount; ++index){
+                    if(queueFamilyProperties[index].queueFlags & VK_QUEUE_GRAPHICS_BIT){
+                        graphicFamily = index;
+                    }
+                    if(window.checkPresentationSupported(candidateDevice, index)){
+                        presentFamily = index;
+                    }
                 }
             }
         }
     }
     if(physicalDevice == VK_NULL_HANDLE){
         throw std::runtime_error("Cannot find proper physical device");
+    }else if(!(graphicFamily.has_value() && presentFamily.has_value())){
+        throw std::runtime_error("No suitable graphics or present queue family");
     }
 
     // Create device queues
@@ -60,8 +83,8 @@ GraphicsDevice::GraphicsDevice(VkInstance& instance, VkSurfaceKHR& surface):
         .queueCount = 1,
         .pQueuePriorities = &queuePriority,
     });
-    queueInfos[0].queueFamilyIndex = graphicFamily;
-    queueInfos[1].queueFamilyIndex = presentFamily;
+    queueInfos[0].queueFamilyIndex = graphicFamily.value();
+    queueInfos[1].queueFamilyIndex = presentFamily.value();
 
     // Create logical device
     VkPhysicalDeviceFeatures deviceFeatures = {};
@@ -77,8 +100,8 @@ GraphicsDevice::GraphicsDevice(VkInstance& instance, VkSurfaceKHR& surface):
     }
     
     // Get queues
-    vkGetDeviceQueue(device, graphicFamily, 0, &graphicQueue);
-    vkGetDeviceQueue(device, presentFamily, 0, &presentQueue);
+    vkGetDeviceQueue(device, graphicFamily.value(), 0, &graphicQueue);
+    vkGetDeviceQueue(device, presentFamily.value(), 0, &presentQueue);
 }
 
 GraphicsDevice::~GraphicsDevice(){

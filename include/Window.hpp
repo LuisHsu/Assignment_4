@@ -2,7 +2,9 @@
 #define WINDOW_DEF
 
 #include <vulkan/vulkan.hpp>
-#include <wayland-client.h>
+extern "C"{
+	#include <xcb/xcb.h>
+}
 
 class Window{
 public:
@@ -10,16 +12,13 @@ public:
     ~Window();
     
     VkSurfaceKHR surface;
-    
+    bool checkPresentationSupported(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex);
+
 private:
     VkInstance& instance;
-    struct wl_surface* wlSurface;
-    struct wl_display* display;
-    struct wl_registry* registry;
-    struct wl_shell_surface* shellSurface;
-    static struct wl_registry_listener registryListener;
-    static struct wl_compositor* compositor;
-    static struct wl_shell* shell;
+    xcb_connection_t *connection;
+	xcb_window_t window;
+    xcb_screen_t* screen;
 };
 
 #endif

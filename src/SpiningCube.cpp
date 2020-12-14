@@ -12,7 +12,7 @@
 SpiningCube::SpiningCube():
     instance(),
     window(instance.instance),
-    graphics(instance.instance, window.surface),
+    graphics(instance.instance, window),
     pipeline(),
     eventHandler(2)
 {

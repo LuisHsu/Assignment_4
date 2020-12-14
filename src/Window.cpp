@@ -7,65 +7,41 @@
 #include <Window.hpp>
 
 #include <stdexcept>
-#include <iostream>
 #include <string>
-
-extern "C"{
-#include <vulkan/vulkan_wayland.h>
-}
-
-struct wl_compositor* Window::compositor = nullptr;
-struct wl_shell* Window::shell = nullptr;
-
-struct wl_registry_listener Window::registryListener = {
-    [](void *, struct wl_registry *registry, uint32_t id,const char *interface, uint32_t version){
-        if(std::string(interface) == "wl_compositor"){
-            compositor = (struct wl_compositor*)wl_registry_bind(registry, id, &wl_compositor_interface, version);
-        }else if(std::string(interface) == "wl_shell"){
-            shell = (struct wl_shell*)wl_registry_bind(registry, id, &wl_shell_interface, version);
-        }
-    },
-    [](void* , struct wl_registry* , uint32_t id){
-    }
-};
+#include <xcb/xcb.h>
+#include <vulkan/vulkan_xcb.h>
 
 Window::Window(VkInstance& instance):
-    instance(instance), display(wl_display_connect(nullptr))
+    instance(instance)
 {
-    if(!display){
-        throw std::runtime_error("Cannot connect wayland display");
+	connection = xcb_connect(nullptr, nullptr);
+    if(xcb_connection_has_error(connection)){
+        throw std::runtime_error("Error connect to xcb");
     }
-    if((registry = wl_display_get_registry(display)) == nullptr){
-        throw std::runtime_error("Cannot get wayland registry");
-    };
-    if(wl_registry_add_listener(registry, &registryListener, nullptr) < 0){
-        throw std::runtime_error("Cannot add wayland registry listener");
-    }
-    if(wl_display_dispatch(display) == -1){
-        throw std::runtime_error("Cannot dispatch wayland display");
-    }
-    if(wl_display_roundtrip(display) == -1){
-        throw std::runtime_error("Cannot roundtrip wayland display");
-    }
-    if((wlSurface = wl_compositor_create_surface(compositor)) == nullptr){
-        throw std::runtime_error("Cannot create wayland surface");
-    }
-    if((shellSurface = wl_shell_get_shell_surface(shell, wlSurface)) == nullptr){
-        throw std::runtime_error("Cannot get wayland shell surface");
-    }
-    wl_shell_surface_set_toplevel(shellSurface);
-    // Create Vulkan surface
-    VkWaylandSurfaceCreateInfoKHR surfaceInfo = {
-        .sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR,
-        .display = display,
-        .surface = wlSurface,
-    };
-    if(vkCreateWaylandSurfaceKHR(instance, &surfaceInfo, nullptr, &surface) != VK_SUCCESS){
-        throw std::runtime_error("Cannot create Vulkan surface");
-    }
+	xcb_screen_iterator_t screenIter = xcb_setup_roots_iterator(xcb_get_setup(connection));
+	screen = screenIter.data;
+    window = xcb_generate_id(connection);
+	xcb_create_window(connection,
+		XCB_COPY_FROM_PARENT,
+		window,
+		screen->root,
+		0, 0,
+		screen->width_in_pixels, screen->height_in_pixels,
+		0,
+		XCB_WINDOW_CLASS_INPUT_OUTPUT,
+		screen->root_visual,
+		0, nullptr
+	);
+    xcb_map_window(connection, window);
+	xcb_flush(connection);
 }
 
 Window::~Window(){
-    wl_display_disconnect(display);
-    vkDestroySurfaceKHR(instance, surface, nullptr);
+    //vkDestroySurfaceKHR(instance, surface, nullptr);
+    xcb_destroy_window(connection, window);
+    xcb_disconnect(connection);
+}
+
+bool Window::checkPresentationSupported(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex){
+    return vkGetPhysicalDeviceXcbPresentationSupportKHR(physicalDevice, queueFamilyIndex, connection, screen->root_visual) == VK_TRUE;
 }
