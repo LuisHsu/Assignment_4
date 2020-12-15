@@ -12,7 +12,7 @@ public:
     ~Window();
     
     VkSurfaceKHR surface;
-    bool checkPresentationSupported(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex);
+    bool checkPresentationSupported(VkPhysicalDevice& physicalDevice, uint32_t queueFamilyIndex);
 
 private:
     VkInstance& instance;

@@ -7,13 +7,13 @@
 #include <Window.hpp>
 
 #include <stdexcept>
-#include <string>
 #include <xcb/xcb.h>
 #include <vulkan/vulkan_xcb.h>
 
 Window::Window(VkInstance& instance):
     instance(instance)
 {
+	// Create XCB window
 	connection = xcb_connect(nullptr, nullptr);
     if(xcb_connection_has_error(connection)){
         throw std::runtime_error("Error connect to xcb");
@@ -34,14 +34,34 @@ Window::Window(VkInstance& instance):
 	);
     xcb_map_window(connection, window);
 	xcb_flush(connection);
+	// Create surface
+	struct VkXcbSurfaceCreateInfoKHR surfaceInfo = {
+		.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR,
+		.pNext = nullptr,
+		.flags = 0,
+		.connection = connection,
+		.window = window,
+	};
+	if(vkCreateXcbSurfaceKHR(instance, &surfaceInfo, nullptr, &surface) != VK_SUCCESS){
+		throw std::runtime_error("Cannot create Vulkan surface");
+	}
 }
 
 Window::~Window(){
-    //vkDestroySurfaceKHR(instance, surface, nullptr);
+    vkDestroySurfaceKHR(instance, surface, nullptr);
     xcb_destroy_window(connection, window);
     xcb_disconnect(connection);
 }
 
-bool Window::checkPresentationSupported(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex){
-    return vkGetPhysicalDeviceXcbPresentationSupportKHR(physicalDevice, queueFamilyIndex, connection, screen->root_visual) == VK_TRUE;
+bool Window::checkPresentationSupported(VkPhysicalDevice& physicalDevice, uint32_t queueFamilyIndex){
+    VkBool32 result;
+	if(vkGetPhysicalDeviceSurfaceSupportKHR(
+		physicalDevice,
+		queueFamilyIndex,
+		surface,
+		&result
+	) != VK_SUCCESS){
+		throw std::runtime_error("Cannot get Vulkan surface support");
+	};
+	return result == VK_TRUE;
 }

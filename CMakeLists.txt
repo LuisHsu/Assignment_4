@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Vulkan REQUIRED)
 find_package(Libinput REQUIRED)
 find_package(udev REQUIRED)
-find_package(Xcb REQUIRED)
+find_package(XCB REQUIRED)
 find_package(Systemd REQUIRED)
 include_directories(
     ${Vulkan_INCLUDE_DIRS}
@@ -31,7 +31,7 @@ add_executable(spining_cube
     src/Pipeline.cpp
 )
 target_link_libraries(spining_cube
-    ${Vulkan_LIBRARIES}
+    Vulkan::Vulkan
     ${Libinput_LIBRARIES}
     ${UDEV_LIBRARIES}
     ${SYSTEMD_LIBRARIES}

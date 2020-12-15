@@ -15,18 +15,23 @@ GraphicsInstance::GraphicsInstance(){
     VkApplicationInfo appInfo = {
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
         .pApplicationName = "Assignment 4",
-        .applicationVersion = VK_MAKE_VERSION(0, 1, 0),
+        .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
         .pEngineName = "No Engine",
         .engineVersion = VK_MAKE_VERSION(1, 0, 0),
-        .apiVersion = VK_API_VERSION_1_2,
+        .apiVersion = VK_API_VERSION_1_0,
     };
     std::vector<const char*> extensionNames({
-        "VK_KHR_wayland_surface"
+        "VK_KHR_surface",
+        "VK_KHR_xcb_surface"
+    });
+    std::vector<const char*> validationLayers({
+        "VK_LAYER_KHRONOS_validation"
     });
     VkInstanceCreateInfo instanceCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pApplicationInfo = &appInfo,
-        .enabledLayerCount = 0,
+        .enabledLayerCount = static_cast<uint32_t>(validationLayers.size()),
+        .ppEnabledLayerNames = validationLayers.data(),
         .enabledExtensionCount = static_cast<uint32_t>(extensionNames.size()),
         .ppEnabledExtensionNames = extensionNames.data(),
     };
