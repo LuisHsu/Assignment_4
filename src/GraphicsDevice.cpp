@@ -27,6 +27,10 @@ GraphicsDevice::GraphicsDevice(VkInstance instance, Window& window):
     if(vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, physicalDevices.data()) != VK_SUCCESS){
         throw std::runtime_error("Cannot get Vulkan physical devices");
     }
+    // Chack device capability
+    const std::vector<const char*> deviceExtensions = {
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME
+    };
     std::optional<uint32_t> graphicFamily, presentFamily;
     for(VkPhysicalDevice& candidateDevice : physicalDevices){
         VkPhysicalDeviceProperties deviceProperties;
@@ -35,15 +39,12 @@ GraphicsDevice::GraphicsDevice(VkInstance instance, Window& window):
         vkGetPhysicalDeviceFeatures(candidateDevice, &deviceFeatures);
         if(deviceFeatures.geometryShader){
             // Check device extentions
-            const std::vector<const char*> requiredExtensions = {
-                VK_KHR_SWAPCHAIN_EXTENSION_NAME
-            };
             uint32_t extensionCount;
             vkEnumerateDeviceExtensionProperties(candidateDevice, nullptr, &extensionCount, nullptr);
             std::vector<VkExtensionProperties> availableExtensionsProp(extensionCount);
             vkEnumerateDeviceExtensionProperties(candidateDevice, nullptr, &extensionCount, availableExtensionsProp.data());
             bool isSuitable = true;
-            for(const char* extension : requiredExtensions){
+            for(const char* extension : deviceExtensions){
                 if(std::find_if(availableExtensionsProp.begin(), availableExtensionsProp.end(), [extension](VkExtensionProperties& prop){
                     return strcmp(prop.extensionName, extension) == 0;
                 }) == availableExtensionsProp.end()){
@@ -92,7 +93,8 @@ GraphicsDevice::GraphicsDevice(VkInstance instance, Window& window):
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
         .queueCreateInfoCount = static_cast<uint32_t>(queueInfos.size()),
         .pQueueCreateInfos = queueInfos.data(),
-        .enabledExtensionCount = 0,
+        .enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size()),
+        .ppEnabledExtensionNames = deviceExtensions.data(),
         .pEnabledFeatures = &deviceFeatures,
     };
     if(vkCreateDevice(physicalDevice, &deviceInfo, nullptr, &device) != VK_SUCCESS){
